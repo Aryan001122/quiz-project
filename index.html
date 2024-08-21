@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz Application</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); /* Starry sky gradient */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            position: relative;
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quiz-container h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        .quiz-container label {
+            display: block;
+            background-color: #f0f0f0;
+            border: 2px solid #d0d0d0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-container label:hover {
+            background-color: #e0e0e0;
+            border-color: #b0b0b0;
+        }
+
+        #start {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        #start:hover {
+            background-color: #0056b3;
+        }
+
+        #submit {
+            background-color: #28a745;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        #submit:hover {
+            background-color: #218838;
+        }
+
+        #results {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #333333;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #007bff;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 100px;
+            height: auto;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+    <img src="quizz logo.avif" alt="Quiz Logo" class="logo">
+    <div class="quiz-container" id="quiz-container">
+        <h2>Welcome to the Interactive Quiz!</h2>
+        <button id="start">Start the Quiz</button>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "What is the capital of France?",
+                options: {
+                    a: "Berlin",
+                    b: "Madrid",
+                    c: "Paris",
+                    d: "Rome"
+                },
+                correct: "c"
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: {
+                    a: "Earth",
+                    b: "Mars",
+                    c: "Jupiter",
+                    d: "Saturn"
+                },
+                correct: "b"
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                options: {
+                    a: "Vincent van Gogh",
+                    b: "Pablo Picasso",
+                    c: "Leonardo da Vinci",
+                    d: "Claude Monet"
+                },
+                correct: "c"
+            },
+            {
+                question: "What is the smallest planet in our solar system?",
+                options: {
+                    a: "Earth",
+                    b: "Mars",
+                    c: "Venus",
+                    d: "Mercury"
+                },
+                correct: "d"
+            },
+            {
+                question: "What is the capital of Japan?",
+                options: {
+                    a: "Beijing",
+                    b: "Seoul",
+                    c: "Tokyo",
+                    d: "Bangkok"
+                },
+                correct: "c"
+            },
+            {
+                question: "Who wrote 'To Kill a Mockingbird'?",
+                options: {
+                    a: "Harper Lee",
+                    b: "Mark Twain",
+                    c: "Ernest Hemingway",
+                    d: "Jane Austen"
+                },
+                correct: "a"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizOver = false;
+
+        const quizContainer = document.getElementById('quiz-container');
+        const startButton = document.getElementById('start');
+
+        function loadQuiz() {
+            if (quizOver) return;
+
+            const currentQuizData = quizData[currentQuestionIndex];
+
+            quizContainer.innerHTML = `
+                <h2>${currentQuizData.question}</h2>
+                <label>
+                    <input type="radio" name="answer" value="a">
+                    ${currentQuizData.options.a}
+                </label>
+                <label>
+                    <input type="radio" name="answer" value="b">
+                    ${currentQuizData.options.b}
+                </label>
+                <label>
+                    <input type="radio" name="answer" value="c">
+                    ${currentQuizData.options.c}
+                </label>
+                <label>
+                    <input type="radio" name="answer" value="d">
+                    ${currentQuizData.options.d}
+                </label>
+                <div class="feedback" id="feedback"></div>
+                <button id="submit">Submit Answer</button>
+            `;
+
+            document.getElementById('submit').addEventListener('click', () => {
+                const selectedAnswer = getSelected();
+
+                if (selectedAnswer) {
+                    const isCorrect = selectedAnswer === quizData[currentQuestionIndex].correct;
+                    if (isCorrect) score++;
+
+                    showFeedback(isCorrect);
+
+                    currentQuestionIndex++;
+
+                    if (currentQuestionIndex < quizData.length) {
+                        setTimeout(loadQuiz, 2000); // Delay to show feedback before loading next question
+                    } else {
+                        quizOver = true;
+                        setTimeout(showFinalResults, 2000); // Delay to show final results after last question
+                    }
+                }
+            });
+        }
+
+        function getSelected() {
+            const answers = document.querySelectorAll('input[name="answer"]');
+            let selectedAnswer = null;
+
+            answers.forEach(answer => {
+                if (answer.checked) {
+                    selectedAnswer = answer.value;
+                }
+            });
+
+            return selectedAnswer;
+        }
+
+        function showFeedback(isCorrect) {
+            const feedbackElement = document.getElementById('feedback');
+            if (isCorrect) {
+                feedbackElement.textContent = "Correct! Well done.";
+                feedbackElement.style.color = "green";
+            } else {
+                feedbackElement.textContent = `Incorrect! The correct answer was "${quizData[currentQuestionIndex].correct.toUpperCase()}".`;
+                feedbackElement.style.color = "red";
+            }
+        }
+
+        function showFinalResults() {
+            quizContainer.innerHTML = '';
+            let feedbackMessage = '';
+
+            if (score === quizData.length) {
+                feedbackMessage = "Perfect score! You're a quiz master!";
+            } else if (score > quizData.length / 2) {
+                feedbackMessage = "Great job! You did really well!";
+            } else {
+                feedbackMessage = "Good effort! Keep practicing and you'll get better!";
+            }
+
+            quizContainer.innerHTML = `
+                <h2>You scored ${score} out of ${quizData.length}</h2>
+                <p>${feedbackMessage}</p>
+                <button onclick="location.reload()">Restart Quiz</button>
+            `;
+        }
+
+        startButton.addEventListener('click', () => {
+            loadQuiz();
+        });
+    </script>
+</body>
+</html>
